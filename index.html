@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <form id="new-products" style="display: flex; flex-direction: column; gap: 16px; align-items: center;">
+        <input type="text" placeholder="Nombre" name="name">
+        <input type="text" placeholder="Slug" name="slug">
+        <input type="text" placeholder="Descripción" name="description">
+        <input type="text" placeholder="Código" name="barcode">
+        <input type="number" placeholder="Precio" name="price">
+        <input type="file" placeholder="Imagen" name="media">
+        <button type="submit">Enviar</button>
+    </form>
+
+    <div style="width: 100%; text-align: center; margin-top: 100px;">
+        <button id="ws-button" type="button" style="text-align: center; width: 200px; height: 50px;">Send</button>
+    </div>
+
+    <script src="/request.js" type="module"></script>
+</body>
+</html>
