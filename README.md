@@ -4,8 +4,7 @@
   - Database:
     - Postgresql 15
   - Git
-<br>
-<br>
-<br>
+
 #### **Start server:**
-`uvicorn server:app`
+
+`uvicorn app:app`
