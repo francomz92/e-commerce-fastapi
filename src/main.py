@@ -4,6 +4,7 @@ from starlette.exceptions import HTTPException
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.exceptions import RequestValidationError
+from fastapi.staticfiles import StaticFiles
 
 from .core.configs import settings
 from .handlers.http_exceptions import (
@@ -19,6 +20,7 @@ def get_app() -> FastAPI:
     """Configura el servidor para el proyecto"""
 
     server = FastAPI(**settings.fastapi_kwargs)
+    server.mount('/static', StaticFiles(directory='static'), name='static')
 
     # Middlewares
     server.add_middleware(

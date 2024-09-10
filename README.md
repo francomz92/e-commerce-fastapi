@@ -1,10 +1,7 @@
-### **Instalations:**
-  - Programing language:
-    - Python 3.11.4
-  - Database:
-    - Postgresql 15
-  - Git
+### **Requerimientos:**
+  - Python 3.11.4
+  - Postgresql 15
 
 #### **Start server:**
 
-`uvicorn app:app`
+`python app.py`

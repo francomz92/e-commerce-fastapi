@@ -12,6 +12,8 @@ class Settings(BaseConfig):
     SECRET_KEY: str = 'secret'
     TIME_ZONE: str
     BASE_URL_BACKEND: str = 'http://localhost:8000'
+    HOST: str = '0.0.0.0'
+    PORT: int = 8000
 
     DB: DBConfig = DBConfig() # type: ignore
     CORS: CorsConfig = CorsConfig() # type: ignore
