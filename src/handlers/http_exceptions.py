@@ -24,7 +24,7 @@ async def http_request_validation_error_exception_handler(request: Request, exc:
             else:
                 context = error['ctx']
                 msg = context['error'] if context.get('error', None) else context['reason']
-            field = error['loc'][-1]
+            field = '.'.join(map(lambda x: str(x), error['loc'][1:]))
             response_data[field] = msg
     except Exception as err:
         method = request.method.upper()
