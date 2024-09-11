@@ -1,10 +1,11 @@
-from typing import List, Optional
+from typing import Optional
+
 from fastapi.datastructures import UploadFile
 from fastapi.params import File, Form
 from pydantic import field_validator
 
 from .....handlers.errors import ValidationError
-from .....schemas import ProductCreationSchema, ProductModificationSchema, CategorySchema
+from .....schemas import ProductCreationSchema, ProductModificationSchema
 
 
 class ProductStoreCreationSchema(ProductCreationSchema):
@@ -42,12 +43,14 @@ class ProductStoreModificationSchema(ProductModificationSchema):
         description: str = Form(None),  # type: ignore
         barcode: str = Form(None),  # type: ignore
         price: float = Form(None),  # type: ignore
-        media: UploadFile = File(None),  # type: ignore
-        categories: List[CategorySchema] = Form(None),  # type: ignore
+        media: Optional[UploadFile] = File(None),  # type: ignore
+        categories: Optional[str] = Form(None),  # type: ignore
         image: str = Form(None),  # type: ignore
         in_offer: bool = Form(None),  # type: ignore
         discount: int = Form(None),  # type: ignore
     ):
+        if categories is not None:
+            categories = categories.replace('"', '').split(',') # type: ignore
         return cls(
             name=name,
             slug=slug,
@@ -55,7 +58,7 @@ class ProductStoreModificationSchema(ProductModificationSchema):
             barcode=barcode,
             price=price,
             media=media,
-            categories=categories,
+            categories=categories,  # type: ignore
             image=image,
             in_offer=in_offer,
             discount=discount,

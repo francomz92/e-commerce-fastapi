@@ -24,3 +24,9 @@ class CategoryTransaction(Transaction[Category, CategoryCreationSchema, Category
         statment = super().where(skip, limit, order_by, **kwargs) # .options(selectinload(self.model.products))
         result = await self.db.execute(statment)
         return result.scalars()._allrows()
+    
+    @transaction
+    async def all(self):
+        statment = super().all()
+        result = await self.db.execute(statment)
+        return result.scalars()._allrows()

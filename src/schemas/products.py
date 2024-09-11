@@ -1,6 +1,6 @@
-from typing import Any, List, Optional
+from typing import List, Optional
 from uuid import UUID
-from fastapi.types import IncEx
+
 from pydantic import BaseModel, ValidationInfo
 from pydantic.functional_validators import field_validator
 
@@ -21,7 +21,6 @@ class ProductSchema(BaseProductSchema):
     in_offer: Optional[bool] = False
     discount: Optional[int] = 0
     price_with_discount: Optional[float] = 0
-
     categories: List[CategorySchema] = []
 
     class Config:
@@ -57,4 +56,4 @@ class ProductModificationSchema(BaseModel):
     image: Optional[str]
     in_offer: Optional[bool]
     discount: Optional[int]
-    categories: List[CategorySchema] = []
+    categories: Optional[List[UUID]] = []

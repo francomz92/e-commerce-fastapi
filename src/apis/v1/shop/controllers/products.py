@@ -1,12 +1,14 @@
 from uuid import UUID
+from datetime import date
 from fastapi import status
 from fastapi.exceptions import HTTPException
 
+from .....constants.validation import PRODUCTS_IMAGE_EXTENSIONS
+from .....constants.error_messages import INVALID_FILE_FORMAT
 from .....utils.constants import ERROR__UPLOAD_FILE, ERROR__NOT_FOUND
 from .....helpers.files import FileHandler
-from .....handlers.errors import NotFoundError
+from .....handlers.errors import NotFoundError, ValidationError
 from .....schemas import ProductCreationSchema, ProductModificationSchema
-from .....models import Product, Category
 from .....services.transactions import ProductTransaction, CategoryTransaction
 from ....dependencies.connections import Session
 from ..services.filters import ProductFilter
@@ -19,8 +21,11 @@ class ProductsController:
         self._db = session
 
     async def create_product(self, raw_data: ProductStoreCreationSchema):
+        today = date.today()
         uploaded_path = FileHandler.upload_image(
-            raw_data.media, path=f'products/{raw_data.media.filename}'
+            raw_data.media,
+            path=f'products/{raw_data.media.filename}',
+            folder=f'images/{today.year}/{today.month}'
         )
         if not uploaded_path:
             raise HTTPException(
@@ -52,37 +57,56 @@ class ProductsController:
         if not product:
             raise NotFoundError(msg=ERROR__NOT_FOUND % 'producto')
 
-        if raw_data.media and raw_data.media.size:
+        if raw_data.media and raw_data.media.size and raw_data.media.filename:
+            """ Valida y Carga la imagen del producto """
             error_during_upload = HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=ERROR__UPLOAD_FILE
+                detail=ERROR__UPLOAD_FILE,
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
+            
+            if not FileHandler.validate_file_extension(raw_data.media, PRODUCTS_IMAGE_EXTENSIONS):
+                raise ValidationError(
+                    field='media',
+                    msg=INVALID_FILE_FORMAT.format(', '.join(PRODUCTS_IMAGE_EXTENSIONS))
+                )
 
             is_deleted = FileHandler.delete_image(product.image)
             if not is_deleted:
                 raise error_during_upload
 
             uploaded_path = FileHandler.upload_image(
-                raw_data.media, path=f'products/{raw_data.media.filename}'
+                media=raw_data.media,
+                path=raw_data.media.filename,
+                folder=f'images/products'
             )
             if not uploaded_path:
                 raise error_during_upload
 
             raw_data.image = uploaded_path
+        
+        """ Actualiza los datos del producto """
         modification_schema = ProductModificationSchema(
             **raw_data.model_dump(
-                exclude={'media'}, exclude_none=True, exclude_unset=True
+                exclude={'media'},
+                exclude_none=True,
+                exclude_unset=True
             )
         )
         updated_product = await ProductTransaction(self._db).update(
-            product, modification_schema
+            product,
+            modification_schema
         )
 
-        # current_product_categories_ids = [category.id for category in product.categories]
-        # for category_id in raw_data.categories:
-        #     if category_id in current_product_categories_ids:
-        #         continue
-        #     category = await CategoryTransaction(self._db, Category).get_by_id(category_id)
-        #     updated_product.categories.append(category)
+        """ Actualiza las categorías del producto """
+        if not raw_data.categories:
+            product.categories.clear()
+        else:
+            new_categories = raw_data.categories
+            all_categories = await CategoryTransaction(self._db).all()
+            for category in filter(lambda x: x.id in new_categories, all_categories):
+                if category.id in [cat.id for cat in product.categories]:
+                    continue
+                product.categories.append(category)
         return updated_product
 
     async def delete_product(self, _id: UUID):

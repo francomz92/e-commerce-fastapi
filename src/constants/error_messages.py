@@ -1,0 +1,1 @@
+INVALID_FILE_FORMAT = 'Solo se admiten los siguientes formatos de archivos: {0}'

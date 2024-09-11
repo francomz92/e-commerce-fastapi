@@ -1,3 +1,4 @@
+from abc import abstractmethod
 from typing import Generic, Type, TypeVar
 from uuid import UUID
 from pydantic import BaseModel, UUID4
@@ -36,7 +37,7 @@ class Transaction(Generic[ModelType, CreationSchemaType, ModificationSchemaType]
         return data
 
     def get_by_id(self, _id: UUID4):
-        statment = select(self.model).where(self.model.id == _id)
+        statment = select(self.model).where(self.model.id == _id.hex)
         return statment
 
     def update(self, db_data: ModelType, raw_data: dict):
@@ -53,3 +54,8 @@ class Transaction(Generic[ModelType, CreationSchemaType, ModificationSchemaType]
     @transaction
     async def delete(self, obj: ModelType):
         return await self.db.delete(obj)
+    
+    @abstractmethod
+    def all(self):
+        statment = select(self.model)
+        return statment

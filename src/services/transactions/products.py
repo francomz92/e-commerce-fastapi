@@ -1,4 +1,3 @@
-from typing import Type
 from pydantic import UUID4
 from sqlalchemy.ext.asyncio.session import AsyncSession
 from sqlalchemy.orm import selectinload
@@ -27,11 +26,13 @@ class ProductTransaction(Transaction[Product, ProductCreationSchema, ProductModi
 
     @transaction
     async def update(self, db_data: Product, raw_data: ProductModificationSchema):
-        product = super().update(db_data, raw_data.model_dump(exclude={'categories'}, exclude_none=True, exclude_unset=True))
-        for category in raw_data.categories:
-            if category in product.categories:
-                continue
-            product.categories.append(category)
-        # await self.db.add(product)
+        product = super().update(
+            db_data,
+            raw_data.model_dump(
+                exclude={'categories'},
+                exclude_none=True,
+                exclude_unset=True
+            )
+        )
         await self.db.flush([product])
         return product

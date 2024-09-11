@@ -62,12 +62,9 @@ async def list_products(
 async def update_product(
     db: Annotated[Session, Depends(get_db)],
     product_id: UUID,
-    data: Annotated[
-        ProductStoreModificationSchema, Depends(ProductStoreModificationSchema.as_form)
-    ],
+    data: ProductStoreModificationSchema = Depends(ProductStoreModificationSchema.as_form)
 ):
     product = await ProductsController(db).update_product(product_id, data)
-    # return ProductSchema.model_validate(product)
     return product
 
 
