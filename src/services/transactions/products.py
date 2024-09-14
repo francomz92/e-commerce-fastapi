@@ -3,7 +3,7 @@ from sqlalchemy.ext.asyncio.session import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from ...helpers.transactions import Transaction, transaction
-from ...models import Product
+from ...models import Product, Category
 from ...schemas import ProductCreationSchema, ProductModificationSchema
 
 
@@ -20,7 +20,12 @@ class ProductTransaction(Transaction[Product, ProductCreationSchema, ProductModi
     
     @transaction
     async def where(self, skip: int, limit: int, order_by: str, **kwargs):
+        categories = kwargs.pop('categories', [])
         statment = super().where(skip, limit, order_by, **kwargs).options(selectinload(self.model.categories))
+        if categories:
+            statment = statment.join(self.model.categories).filter(
+                Category.slug.in_(categories)
+            )
         result = await self.db.execute(statment)
         return result.scalars().all()
 
